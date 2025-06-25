@@ -4,6 +4,13 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 app.use('/api/auth', authRoutes);
+import authRoutes from './routes/auth.js';
+
+app.use('/api/auth', authRoutes);
+import ngoRoutes from './routes/ngo.js';
+
+app.use('/api/ngo', ngoRoutes);
+
 
 
 
