@@ -2,29 +2,32 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import authRoutes from './routes/authRoutes.js';
-app.use('/api/auth', authRoutes);
-import authRoutes from './routes/auth.js';
 
-app.use('/api/auth', authRoutes);
-import ngoRoutes from './routes/ngo.js';
-
-app.use('/api/ngo', ngoRoutes);
-
-
-
-
+// ✅ Load environment variables
 dotenv.config();
 
+// ✅ Import routes (first)
+import authRoutes from './routes/auth.js';
+import ngoRoutes from './routes/ngo.js';
+
+// ✅ Initialize express app
 const app = express();
+
+// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+// ✅ Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/ngo', ngoRoutes);
 
+// ✅ Root route
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
+
+// ✅ MongoDB connection
+const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
