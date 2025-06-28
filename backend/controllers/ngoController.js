@@ -2,6 +2,8 @@ import Ngo from '../models/Ngo.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+
+
 export const registerNgo = async (req, res) => {
   try {
     const { name, email, organizationName, password } = req.body;
@@ -46,3 +48,51 @@ export const loginNgo = async (req, res) => {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
+// it gives you the profile.
+export const getNgoProfile = async (req, res) => {
+  try {
+    const ngo = await Ngo.findById(req.ngo.id).select('-password'); // exclude hashed password
+    if (!ngo) return res.status(404).json({ msg: 'NGO not found' });
+
+    res.status(200).json(ngo);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+export const updateNgoProfile = async (req, res) => {
+  try {
+    const { name, organizationName } = req.body;
+
+    const updatedNgo = await Ngo.findByIdAndUpdate(
+      req.ngo.id,
+      { name, organizationName },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      msg: 'NGO profile updated successfully',
+      ngo: {
+        id: updatedNgo._id,
+        name: updatedNgo.name,
+        email: updatedNgo.email,
+        organizationName: updatedNgo.organizationName,
+      },
+    });
+  } catch (err) {
+    console.error('Error updating NGO profile:', err);
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+export const deleteNgoAccount = async (req, res) => {
+  try {
+    await Ngo.findByIdAndDelete(req.ngo.id);
+    res.status(200).json({ msg: 'NGO account deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting NGO account:', err);
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+
