@@ -3,15 +3,13 @@ dotenv.config();
 import express from 'express';
 import mongoose from 'mongoose';
 
+
 import cors from 'cors';
 
-// ✅ Load environment variables
-
-// ✅ Import routes (first)
 import authRoutes from './routes/auth.js';
 import ngoRoutes from './routes/ngo.js';
 import donationRoutes from './routes/donation.js';
-
+import patientCaseRoutes from './routes/patientCase.js';
 
 
 // ✅ Initialize express app
@@ -21,10 +19,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // ✅ Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ngo', ngoRoutes);
 app.use('/api/donation', donationRoutes);
+
+app.use('/api/patient-cases', patientCaseRoutes);
 
 // ✅ Root route
 app.get('/', (req, res) => {

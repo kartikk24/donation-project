@@ -2,7 +2,7 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import Donation from '../models/Donation.js';
 
-console.log('✅ donationController loaded');
+
 
 
 // Get all donations for a specific NGO
