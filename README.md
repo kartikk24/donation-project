@@ -1,28 +1,41 @@
-# Donation Platform Backend
+# HopeFund - NGO Donation Platform 💖
 
-This is a complete backend for a secure donation platform where verified NGOs can register, manage their profiles, and receive donations through Razorpay integration.
-
-## 📦 Features
-
-- 🛡️ NGO Registration and Login with JWT authentication
-- 🔐 Protected routes for NGO profile, updates, and deletion
-- 💸 Donation creation and payment verification with Razorpay
-- 🗃️ MongoDB for storing NGOs and donations
-- ✅ Middleware for authentication
-- 🌐 RESTful API endpoints with Express
+A full-stack MERN application that empowers verified NGOs and hospitals to create medical fundraising cases for patients in urgent need. Donors can securely contribute to individual patient cases, track donation progress, and receive confirmation receipts.
 
 ---
 
-## 🚀 Tech Stack
+## 🚀 Features
 
-- Node.js
-- Express.js
-- MongoDB & Mongoose
-- JWT (JSON Web Tokens) for authentication
-- Razorpay for payment gateway
-- dotenv for environment variable management
+- 🧾 **Patient Fundraising Cases**: NGOs can post verified medical cases with full details.
+- 💳 **Secure Donations**: Donors can donate via Razorpay and receive real-time confirmation.
+- 📊 **Donation Tracking**: Each case tracks `requiredAmount` and `collectedAmount` live.
+- 🔒 **Authentication**: NGO registration & login with protected routes.
+- 🧠 **Admin Dashboard**: NGOs can manage their posted cases.
+- 🌐 **Public Browse Page**: Donors can explore all active patient cases.
+- 📬 **Email Receipts** *(coming soon)*
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Tech Stack
 
+### Frontend
+- React.js (Vite)
+- Tailwind CSS
+- React Router
+- Lucide Icons
+- Shadcn UI
+
+### Backend
+- Node.js + Express.js
+- MongoDB + Mongoose
+- Razorpay API (Payments)
+- JWT Authentication
+
+---
+
+## 🔧 Setup Instructions
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/hopefund.git
+cd hopefund
