@@ -24,8 +24,9 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/ngo', ngoRoutes);
 app.use('/api/donation', donationRoutes);
-
+app.use("/api/cases", patientCaseRoutes);
 app.use('/api/patient-cases', patientCaseRoutes);
+
 
 // ✅ Root route
 app.get('/', (req, res) => {

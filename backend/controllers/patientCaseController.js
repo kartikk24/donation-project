@@ -1,19 +1,32 @@
 import PatientCase from '../models/patientCase.js';
+import Ngo from '../models/Ngo.js'; // ✅ ensure path is correct
 
+// ✅ Create a new patient case
 export const createCase = async (req, res) => {
   try {
-    const ngoId = req.ngo.id;
-    const { patientName, patientAge, diagnosis, treatmentDetails, description, amountNeeded, imageUrl } = req.body;
+    const ngo = req.ngo.id; // from verified JWT
+
+    const {
+      patientName,
+      age,
+      condition,
+      description,
+      requiredAmount,
+      urgency,
+      location,
+    } = req.body;
 
     const newCase = new PatientCase({
-      ngoId,
+      ngo, // ✅ correct field
       patientName,
-      patientAge,
-      diagnosis,
-      treatmentDetails,
+      age,
+      condition,
       description,
-      imageUrl,
-      amountNeeded,
+      requiredAmount,
+      urgency,
+      location,
+      collectedAmount: 0,
+      status: 'pending',
     });
 
     await newCase.save();
@@ -24,58 +37,76 @@ export const createCase = async (req, res) => {
   }
 };
 
-// export const getCases = async (req, res) => {
-//   try {
-//     // const ngoId = req.ngo.id;
-//     const cases = await PatientCase.find(); //{ngoId}
-//     res.status(200).json(cases);
-//   } catch (err) {
-//     console.error("Error fetching cases:", err);
-//     res.status(500).json({ msg: "Server error", error: err.message });
-//   }
-// };
+// ✅ Get all patient cases (public for donors)
 export const getCases = async (req, res) => {
   try {
-    const cases = await PatientCase.find();
+    const cases = await PatientCase.find().populate("ngo", "name").lean();
+
+    if (!Array.isArray(cases)) {
+      console.error("❌ Unexpected result from DB (not array):", cases);
+      return res.status(500).json({ msg: "Unexpected DB response" });
+    }
 
     const transformedCases = cases.map(c => ({
-      id: c._id.toString(),                  // ✅ map _id → id for frontend
+      _id: c._id.toString(),
       patientName: c.patientName,
-      patientAge: c.patientAge,
-      diagnosis: c.diagnosis,
-      treatmentDetails: c.treatmentDetails,
+      illness: c.condition,
       description: c.description,
-      targetAmount: c.amountNeeded,          // ✅ match frontend naming
-      raisedAmount: c.amountRaised || 0,     // ✅ match frontend naming
+      requiredAmount: Number(c.requiredAmount) || 1,
+      collectedAmount: Number(c.collectedAmount) || 0,
+      urgency: c.urgency || "high",
+      location: c.location || "Unknown",
+      ngoName: c.ngo?.name || "Unknown NGO",
       createdAt: c.createdAt,
     }));
 
-    res.status(200).json(transformedCases);
+    res.status(200).json({ cases: transformedCases });
   } catch (err) {
-    console.error("Error fetching cases:", err);
+    console.error("❌ Error fetching cases:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
 
-// ✅ Public endpoint: get all patient cases (for donors browsing)
-export const getAllCases = async (req, res) => {
+// ✅ Get a single case by ID
+export const getCaseById = async (req, res) => {
   try {
-    const cases = await PatientCase.find();
-    res.status(200).json({ cases });
+    const patientCase = await PatientCase.findById(req.params.id).populate("ngo", "_id name").lean();
+
+    if (!patientCase) {
+      return res.status(404).json({ msg: "Patient case not found" });
+    }
+
+    const transformedCase = {
+      _id: patientCase._id.toString(),
+      patientName: patientCase.patientName,
+      condition: patientCase.condition,
+      description: patientCase.description,
+      requiredAmount: patientCase.requiredAmount,
+      collectedAmount: patientCase.collectedAmount || 0,
+      urgency: patientCase.urgency || "medium",
+      location: patientCase.location || "Unknown",
+      ngo: {
+        _id: patientCase.ngo?._id || null,
+        name: patientCase.ngo?.name || "Unknown NGO",
+      },
+      createdAt: patientCase.createdAt,
+    };
+
+    res.status(200).json(transformedCase);
   } catch (err) {
-    console.error("Error fetching cases:", err);
+    console.error("Error fetching case by ID:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
 
-
+// ✅ Update case by NGO (secured)
 export const updateCase = async (req, res) => {
   try {
     const caseId = req.params.id;
-    const ngoId = req.ngo.id;
+    const ngo = req.ngo.id;
 
     const updatedCase = await PatientCase.findOneAndUpdate(
-      { _id: caseId, ngoId },
+      { _id: caseId, ngo },
       req.body,
       { new: true }
     );
@@ -89,12 +120,13 @@ export const updateCase = async (req, res) => {
   }
 };
 
+// ✅ Delete case by NGO (secured)
 export const deleteCase = async (req, res) => {
   try {
     const caseId = req.params.id;
-    const ngoId = req.ngo.id;
+    const ngo = req.ngo.id;
 
-    const deletedCase = await PatientCase.findOneAndDelete({ _id: caseId, ngoId });
+    const deletedCase = await PatientCase.findOneAndDelete({ _id: caseId, ngo });
 
     if (!deletedCase) return res.status(404).json({ msg: "Case not found or unauthorized" });
 

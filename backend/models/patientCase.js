@@ -1,16 +1,45 @@
+// import mongoose from 'mongoose';
+
+// const patientCaseSchema = new mongoose.Schema({
+//   ngoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ngo', required: true },
+//   patientName: { type: String, required: true },
+//   age: { type: Number, required: true },                         // renamed from patientAge
+//   condition: { type: String, required: true },                   // renamed from diagnosis
+//   description: { type: String, required: true },
+//   requiredAmount: { type: Number, required: true },              // renamed from amountNeeded
+//   collectedAmount: { type: Number, default: 0 },                 // renamed from amountRaised
+
+//   urgency: { 
+//     type: String, 
+//     enum: ['low', 'medium', 'high', 'critical'], 
+//     default: 'medium',
+//     required: true,
+//   },
+//   location: { type: String, required: true },
+
+//   createdAt: { type: Date, default: Date.now },
+// });
+
+
+// export default mongoose.model('PatientCase', patientCaseSchema);
 import mongoose from 'mongoose';
 
 const patientCaseSchema = new mongoose.Schema({
-  ngoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ngo', required: true },
-  patientName: { type: String, required: true },
-  patientAge: { type: Number, required: true },
-  diagnosis: { type: String, required: true },
-  treatmentDetails: { type: String, required: true },
-  description: { type: String, required: true },
-  imageUrl: { type: String },  // if you add image upload later
-  amountNeeded: { type: Number, required: true },
-  amountRaised: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now },
-});
+  patientName: String,
+  age: Number,
+  condition: String,
+  requiredAmount: Number,
+  raisedAmount: {
+    type: Number,
+    default: 0,
+  },
+  ngo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Ngo',
+    required: true
+  },
+  // Add timestamps if needed
+}, { timestamps: true });
 
-export default mongoose.model('PatientCase', patientCaseSchema);
+// ✅ Prevent OverwriteModelError
+export default mongoose.models.PatientCase || mongoose.model("PatientCase", patientCaseSchema);
