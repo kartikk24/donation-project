@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerNgo, loginNgo } from '../controllers/ngoController.js';
+// import { registerNgo, loginNgo } from '../controllers/ngoController.js';
 import { verifyToken } from '../middleware/authmiddleware.js';
 import { getNgoProfile } from '../controllers/ngoController.js';
 import { updateNgoProfile } from '../controllers/ngoController.js';
@@ -7,9 +7,9 @@ import { deleteNgoAccount } from '../controllers/ngoController.js';
 
 
 const router = express.Router();
-
-router.post('/register', registerNgo);
-router.post('/login', loginNgo);
+// register and login is done using the auth.js file.
+// router.post('/register', registerNgo);
+// router.post('/login', loginNgo);
 router.get('/profile', verifyToken, getNgoProfile);
 router.put('/profile', verifyToken, updateNgoProfile);
 // ✅ Delete NGO account (protected)

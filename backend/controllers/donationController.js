@@ -1,6 +1,8 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import Donation from '../models/Donation.js';
+import PatientCase from '../models/patientCase.js';
+
 
 
 
@@ -10,7 +12,7 @@ export const getDonationsForNgo = async (req, res) => {
   try {
     const ngoId = req.ngo.id; // retrieved from verified JWT
 
-    const donations = await Donation.find({ ngoId }).sort({ createdAt: -1 });
+    const donations = await Donation.find({ngo: ngoId }).sort({ createdAt: -1 });
 
     res.status(200).json(donations);
   } catch (err) {
@@ -21,14 +23,14 @@ export const getDonationsForNgo = async (req, res) => {
 
 export const createOrder = async (req, res) => {
   try {
-    console.log('🔑 Razorpay Key ID:', process.env.RAZORPAY_KEY_ID);
+    // console.log('🔑 Razorpay Key ID:', process.env.RAZORPAY_KEY_ID);
 
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
 
-    const { amount, donorName, donorEmail, message, ngoId } = req.body;
+    const { amount, donorName, donorEmail, message, ngo } = req.body;
 
     const options = {
       amount: amount * 100, // paise
@@ -52,35 +54,64 @@ export const createOrder = async (req, res) => {
 };
 export const verifyPayment = async (req, res) => {
   try {
-    const generated_signature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${req.body.razorpay_order_id}|${req.body.razorpay_payment_id}`)
-      .digest('hex');
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      donorName,
+      donorEmail,
+      amount,
+      message,
+      ngo,
+      patientId,
+    } = req.body;
 
-    if (generated_signature !== req.body.razorpay_signature) {
-      return res.status(400).json({ msg: 'Invalid payment signature' });
+    const generated_signature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generated_signature !== razorpay_signature) {
+      return res.status(400).json({ msg: "Invalid payment signature" });
     }
 
+    const numericAmount = parseFloat(amount); // ✅ fix here
+
+    // Save donation
     const donation = new Donation({
-      donorName: req.body.donorName,
-      donorEmail: req.body.donorEmail,
-      amount: req.body.amount,
-      message: req.body.message,
-      ngoId: req.body.ngoId,
-      paymentId: req.body.razorpay_payment_id,
-      orderId: req.body.razorpay_order_id,
-      status: 'success',
+      donorName,
+      donorEmail,
+      amount: numericAmount,
+      message,
+      ngo,
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
+      status: "success",
     });
+    console.log("VERIFICATION BODY:", req.body);
+
 
     await donation.save();
 
-    res.status(200).json({ msg: 'Payment verified and donation saved' });
+    const patient = await PatientCase.findById(patientId);
+    if (patient) {
+      patient.raisedAmount += numericAmount; // ✅ safe math
+      await patient.save();
+    }
+   
+
+    res.status(200).json({ msg: "✅ Payment verified and donation saved" });
   } catch (err) {
-    console.error('Error verifying payment:', err);
-    res.status(500).json({ msg: 'Server error during payment verification', error: err.message });
+    console.error("Error verifying payment:", err);
+res.status(500).json({ error: "Internal Server Error", detail: err.message });
+
+    console.error("❌ Error verifying payment:", err);
+    res.status(500).json({
+      msg: "Server error during payment verification",
+      error: err.message,
+    });
   }
 };
-
 
 
 

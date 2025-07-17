@@ -26,7 +26,7 @@ const donationSchema = new mongoose.Schema({
     type: String,
     default: 'pending', // pending, success, failed
   },
-  ngoId: {
+  ngo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ngo',
     required: true,
